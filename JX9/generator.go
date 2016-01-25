@@ -24,6 +24,12 @@ func (script *JX9_script) InitScript() {
 	script.script=""
 }
 
+func NewScript() JX9_script{
+	script:=JX9_script{}
+	script.InitScript()
+	return script
+}
+
 func (script *JX9_script) CreateOpenDataBase(database_name,pointer_name string)  {
 	//Create JX9 code add an open pointer to the database
 	code := fmt.Sprintf(`if (! db_exists('%s')) {

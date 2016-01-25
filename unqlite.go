@@ -63,12 +63,18 @@ type Cursor struct {
 	handle *C.unqlite_kv_cursor
 }
 
+type VM struct {
+	vm *C.unqlite_vm
+}
+
 func init() {
 	C.unqlite_lib_init()
 	if !IsThreadSafe() {
 		panic("unqlite library was not compiled for thread-safe option UNQLITE_ENABLE_THREADS=1")
 	}
 }
+
+
 
 // NewDatabase ...
 func NewDatabase(filename string) (db *Database, err error) {
@@ -84,6 +90,19 @@ func NewDatabase(filename string) (db *Database, err error) {
 	}
 	return
 }
+
+func NewVM() (vm *VM) {
+	vm = &VM{}
+	return
+}
+
+func (db *Database,) Unqlite_compile(jx9_script string,vm *VM) (interface{}){
+	c_jx9_script:=C.CString(jx9_script)
+
+	res := C.unqlite_compile(db.handle,c_jx9_script,C.int(len(jx9_script)-1),&vm.vm)
+	return res
+}
+
 
 // Close ...
 func (db *Database) Close() (err error) {
