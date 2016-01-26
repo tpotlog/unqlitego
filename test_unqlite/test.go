@@ -13,7 +13,7 @@ func main(){
    $rc = db_create('users');
    if ( !$rc ){
      //Handle error
-      print db_errlog();
+      print db_errlog()
    return;
    }
 }`

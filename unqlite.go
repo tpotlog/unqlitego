@@ -96,11 +96,24 @@ func NewVM() (vm *VM) {
 	return
 }
 
-func (db *Database,) Unqlite_compile(jx9_script string,vm *VM) (interface{}){
+func (db *Database,) Unqlite_compile(jx9_script string,vm *VM) (err error){
 	c_jx9_script:=C.CString(jx9_script)
 
-	res := C.unqlite_compile(db.handle,c_jx9_script,C.int(len(jx9_script)-1),&vm.vm)
-	return res
+	res := C.unqlite_compile(db.handle,c_jx9_script,C.int(len(jx9_script)),&vm.vm)
+	if res != C.UNQLITE_OK{
+		if res == C.UNQLITE_COMPILE_ERR{
+			err=UnQLiteError(res)
+			/*const p= new(C.char)
+			fmt.Printf("%s" ,p)
+
+			const c_buff=new(C.char)
+			c_len:=C.int(0)
+			C.unqlite_config(db.handle,C.UNQLITE_CONFIG_JX9_ERR_LOG,c_buff,&c_len);
+			comp_error:=C.GoStringN(c_buff, *c_len)
+			err+=comp_error*/
+		}
+	}
+	return err
 }
 
 
