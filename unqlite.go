@@ -5,6 +5,7 @@ package unqlitego
 #cgo darwin CFLAGS: -DUNQLITE_ENABLE_THREADS=1
 #cgo windows CFLAGS: -DUNQLITE_ENABLE_THREADS=1
 #include "./unqlite.h"
+#include "./wrappers.h"
 #include <stdlib.h>
 */
 import "C"
@@ -96,24 +97,19 @@ func NewVM() (vm *VM) {
 	return
 }
 
-func (db *Database,) Unqlite_compile(jx9_script string,vm *VM) (err error){
-	c_jx9_script:=C.CString(jx9_script)
-
-	res := C.unqlite_compile(db.handle,c_jx9_script,C.int(len(jx9_script)),&vm.vm)
+func (db *Database,) Unqlite_compile(jx9_script string,vm *VM) (error,string ){
+	res := C.unqlite_compile(db.handle,C.CString(jx9_script),C.int(len(jx9_script)),&vm.vm)
 	if res != C.UNQLITE_OK{
 		if res == C.UNQLITE_COMPILE_ERR{
-			err=UnQLiteError(res)
-			/*const p= new(C.char)
-			fmt.Printf("%s" ,p)
-
-			const c_buff=new(C.char)
-			c_len:=C.int(0)
-			C.unqlite_config(db.handle,C.UNQLITE_CONFIG_JX9_ERR_LOG,c_buff,&c_len);
-			comp_error:=C.GoStringN(c_buff, *c_len)
-			err+=comp_error*/
+			err:=UnQLiteError(res)
+			error_log:=new(C.char)
+			err_msg:=C.extract_unqlite_log_error(db.handle,error_log)
+			g_err_msg:=C.GoString(err_msg)
+			C.free(unsafe.Pointer(err_msg))
+			return err,g_err_msg
 		}
 	}
-	return err
+	return UnQLiteError(res),""
 }
 
 
