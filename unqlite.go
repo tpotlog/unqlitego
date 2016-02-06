@@ -53,6 +53,7 @@ var errString = map[UnQLiteError]string{
 	C.UNQLITE_NOMEM:          "Out of memory",
 }
 
+
 // Database ...
 type Database struct {
 	handle *C.unqlite
@@ -66,6 +67,10 @@ type Cursor struct {
 
 type VM struct {
 	vm *C.unqlite_vm
+}
+
+type Unqlite_value struct {
+	unqlite_value *C.unqlite_value
 }
 
 func init() {
@@ -112,7 +117,92 @@ func (db *Database,) Unqlite_compile(jx9_script string,vm *VM) (error,string ){
 	return UnQLiteError(res),""
 }
 
+func (vm *VM)Unqlite_vm_extract_variable(variable_name string) (*Unqlite_value){
+	/*This function must be used with extra causion since it might return
+	a variable from the type of *C.unqlite_value ,be sure to free this pointer
+	In case of no such variable of out-of-memory issue NULL is returned
 
+	In case where the VM have not been executed the return value will be C.int(0)
+	In case of unqlite is compiled with threads support and the vm.vm instance have been releases
+	by a different thread 0 will be returned
+
+	For summary:
+	-----------
+	*) 0 or NULL = Bad
+	*) *C.unqlite_value = Good */
+	c_variable_name := C.CString(variable_name)
+	defer C.free(unsafe.Pointer(c_variable_name))
+	unqlite_value:=C.unqlite_vm_extract_variable(&vm.vm,c_variable_name)
+	return &Unqlite_value{unqlite_value}
+}
+
+
+func unqlite_value_ok(unqlite_value *Unqlite_value)(bool){
+	if unqlite_value.unqlite_value==nil | unqlite_value.unqlite_value==C.int(0){
+		return false
+	}
+	return true
+}
+
+func (vm *VM)Extract_variable_as_int(variable_name string) (int){
+	/*Extract a variable from the VM after if have been executed
+	If something went wrong return nil
+	 */
+	var unqlite_value *Unqlite_value
+	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
+	if ! unqlite_value_ok(unqlite_value){
+		return nil
+	}
+
+	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
+	res:=int(C.unqlite_value_to_int(unqlite_value.unqlite_value))
+	return res
+}
+
+func (vm *VM)Extract_variable_as_string(variable_name string) (string){
+	/*Extract a variable from the VM after if have been executed
+	If something went wrong return nil
+	 */
+	var unqlite_value *Unqlite_value
+	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
+	if ! unqlite_value_ok(unqlite_value){
+		return nil
+	}
+
+	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
+	res:=string(C.unqlite_value_to_string(unqlite_value.unqlite_value))
+	return res
+}
+
+func (vm *VM)Extract_variable_as_bool(variable_name string) (bool){
+	/*Extract a variable from the VM after if have been executed
+	If something went wrong return nil
+	 */
+	var unqlite_value *Unqlite_value
+	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
+	if ! unqlite_value_ok(unqlite_value){
+		return nil
+	}
+
+	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
+	res:=bool(C.unqlite_value_to_bool(unqlite_value.unqlite_value))
+	return res
+}
+
+func (vm *VM)Extract_variable_as_int64(variable_name string) (int64){
+	/*Extract a variable from the VM after if have been executed
+	If something went wrong return nil
+	 */
+	var unqlite_value *Unqlite_value
+	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
+	if ! unqlite_value_ok(unqlite_value){
+		return nil
+	}
+
+	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
+	res:=int64(C.unqlite_value_to_int64(unqlite_value.unqlite_value))
+	return res
+}
 // Close ...
 func (db *Database) Close() (err error) {
 	if db.handle != nil {
