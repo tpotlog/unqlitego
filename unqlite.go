@@ -203,6 +203,21 @@ func (vm *VM)Extract_variable_as_int64(variable_name string) (int64){
 	res:=int64(C.unqlite_value_to_int64(unqlite_value.unqlite_value))
 	return res
 }
+
+func (vm *VM)Extract_variable_as_double(variable_name string) (int64){
+	/*Extract a variable from the VM after if have been executed
+	If something went wrong return nil
+	 */
+	var unqlite_value *Unqlite_value
+	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
+	if ! unqlite_value_ok(unqlite_value){
+		return nil
+	}
+
+	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
+	res:=float64(C.unqlite_value_to_double(unqlite_value.unqlite_value))
+	return res
+}
 // Close ...
 func (db *Database) Close() (err error) {
 	if db.handle != nil {
