@@ -17,6 +17,13 @@ import (
 )
 
 // UnQLiteError ... standard error for this module
+
+type GlobaLError string
+
+func (s GlobaLError) Error() string {
+	return string(s)
+}
+
 type UnQLiteError int
 
 func (e UnQLiteError) Error() string {
@@ -132,91 +139,95 @@ func (vm *VM)Unqlite_vm_extract_variable(variable_name string) (*Unqlite_value){
 	*) *C.unqlite_value = Good */
 	c_variable_name := C.CString(variable_name)
 	defer C.free(unsafe.Pointer(c_variable_name))
-	unqlite_value:=C.unqlite_vm_extract_variable(&vm.vm,c_variable_name)
+	unqlite_value:=C.unqlite_vm_extract_variable(vm.vm,c_variable_name)
 	return &Unqlite_value{unqlite_value}
 }
 
 
-func unqlite_value_ok(unqlite_value *Unqlite_value)(bool){
-	if unqlite_value.unqlite_value==nil | unqlite_value.unqlite_value==C.int(0){
-		return false
+func unqlite_value_ok(unqlite_value *Unqlite_value)(bool) {
+	switch unqlite_value.unqlite_value{
+	case nil:return false//User Data is wrtong
+	default:return true
 	}
-	return true
 }
 
-func (vm *VM)Extract_variable_as_int(variable_name string) (int){
+func (vm *VM)Extract_variable_as_int(variable_name string) (int,error){
 	/*Extract a variable from the VM after if have been executed
 	If something went wrong return nil
 	 */
 	var unqlite_value *Unqlite_value
 	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
 	if ! unqlite_value_ok(unqlite_value){
-		return nil
+		return 0,nil
 	}
 
 	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
 	res:=int(C.unqlite_value_to_int(unqlite_value.unqlite_value))
-	return res
+	return res,GlobaLError("OK")
 }
 
-func (vm *VM)Extract_variable_as_string(variable_name string) (string){
+func (vm *VM)Extract_variable_as_string(variable_name string) (string,error){
 	/*Extract a variable from the VM after if have been executed
 	If something went wrong return nil
 	 */
 	var unqlite_value *Unqlite_value
 	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
 	if ! unqlite_value_ok(unqlite_value){
-		return nil
+		return "",nil
 	}
 
 	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
-	res:=string(C.unqlite_value_to_string(unqlite_value.unqlite_value))
-	return res
+	var plen *C.int
+	c_res:=C.unqlite_value_to_string(unqlite_value.unqlite_value,plen)
+	res:=C.GoStringN(c_res,*plen)
+	defer C.free(unsafe.Pointer(c_res))
+	defer C.free(unsafe.Pointer(plen))
+	return res,GlobaLError("OK")
 }
 
-func (vm *VM)Extract_variable_as_bool(variable_name string) (bool){
+func (vm *VM)Extract_variable_as_bool(variable_name string) (bool,error){
 	/*Extract a variable from the VM after if have been executed
 	If something went wrong return nil
 	 */
 	var unqlite_value *Unqlite_value
 	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
 	if ! unqlite_value_ok(unqlite_value){
-		return nil
+		return false,nil
 	}
 
 	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
-	res:=bool(C.unqlite_value_to_bool(unqlite_value.unqlite_value))
-	return res
+	res:=int(C.unqlite_value_to_bool(unqlite_value.unqlite_value))
+	return res!=0,GlobaLError("OK")
 }
 
-func (vm *VM)Extract_variable_as_int64(variable_name string) (int64){
+func (vm *VM)Extract_variable_as_int64(variable_name string) (int64,error){
 	/*Extract a variable from the VM after if have been executed
 	If something went wrong return nil
 	 */
 	var unqlite_value *Unqlite_value
 	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
 	if ! unqlite_value_ok(unqlite_value){
-		return nil
+		return 0,nil
 	}
 
 	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
 	res:=int64(C.unqlite_value_to_int64(unqlite_value.unqlite_value))
-	return res
+	return res,GlobaLError("OK")
 }
 
-func (vm *VM)Extract_variable_as_double(variable_name string) (int64){
+func (vm *VM)Extract_variable_as_double(variable_name string) (float64,error){
 	/*Extract a variable from the VM after if have been executed
 	If something went wrong return nil
 	 */
 	var unqlite_value *Unqlite_value
 	unqlite_value=vm.Unqlite_vm_extract_variable(variable_name)
 	if ! unqlite_value_ok(unqlite_value){
-		return nil
+		return 0.0,nil
 	}
 
 	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
 	res:=float64(C.unqlite_value_to_double(unqlite_value.unqlite_value))
-	return res
+	return res,GlobaLError("OK")
 }
 // Close ...
 func (db *Database) Close() (err error) {
