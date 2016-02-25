@@ -104,6 +104,8 @@ func NewDatabase(filename string) (db *Database, err error) {
 	return
 }
 
+
+
 func NewVM() (vm *VM) {
 	vm = &VM{}
 	return
@@ -117,11 +119,17 @@ func (db *Database,) Unqlite_compile(jx9_script string,vm *VM) (error,string ){
 			error_log:=new(C.char)
 			err_msg:=C.extract_unqlite_log_error(db.handle,error_log)
 			g_err_msg:=C.GoString(err_msg)
-			C.free(unsafe.Pointer(err_msg))
+			//C.free(unsafe.Pointer(err_msg))
 			return err,g_err_msg
 		}
 	}
-	return UnQLiteError(res),""
+	return nil,""
+}
+
+
+
+func (vm VM) Free(){
+	C.free(unsafe.Pointer(vm.vm))
 }
 
 func (vm *VM)Unqlite_vm_extract_variable(variable_name string) (*Unqlite_value){
@@ -143,6 +151,21 @@ func (vm *VM)Unqlite_vm_extract_variable(variable_name string) (*Unqlite_value){
 	return &Unqlite_value{unqlite_value}
 }
 
+
+func (vm *VM)VM_extract_output() string{
+	//extract the output from a vm after execution
+	var len C.int
+	var buff *C.char
+	buff=C.extract_vm_output(vm.vm,&len)
+	q:=C.GoStringN(buff,len)
+	fmt.Printf("%s",q)
+	return ""
+}
+
+func (vm *VM)VM_exacute() int{
+	res:=C.unqlite_vm_exec(vm.vm)
+	return int(res)
+}
 
 func unqlite_value_ok(unqlite_value *Unqlite_value)(bool) {
 	switch unqlite_value.unqlite_value{

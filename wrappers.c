@@ -2,8 +2,9 @@
 execute or call functions directly*/
 
 #include "./unqlite.h"
-#define VERSION "1.0"
+#include <stdio.h>
 
+#define VERSION "1.0"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,6 +21,17 @@ char * extract_unqlite_log_error(unqlite *pDb)
     return buffer;
 }
 
+char * extract_vm_output(unqlite_vm *pvm,int *length)
+{
+    const void *buffer;
+    char *t;
+    //Extract the VM output
+    unqlite_vm_config(pvm,UNQLITE_VM_CONFIG_EXTRACT_OUTPUT,&buffer,length);
+    t=(char *)malloc(*length+1);
+    memcpy(t,(const char*)buffer,*length);
+    return t;
+
+}
 
 
 
