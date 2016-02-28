@@ -33,7 +33,9 @@ char * extract_vm_output(unqlite_vm *pvm,int *length)
 
 }
 
-
+char * extract_variable_as_string(unqlite_value *unqlite_value,int *len){
+    return unqlite_value_to_string(unqlite_value,len);
+}
 
 
 #ifdef __cplusplus

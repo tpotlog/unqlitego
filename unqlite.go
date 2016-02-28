@@ -184,7 +184,6 @@ func (vm *VM)Extract_variable_as_int(variable_name string) (int,error){
 		return 0,nil
 	}
 
-	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
 	res:=int(C.unqlite_value_to_int(unqlite_value.unqlite_value))
 	return res,GlobaLError("OK")
 }
@@ -198,13 +197,10 @@ func (vm *VM)Extract_variable_as_string(variable_name string) (string,error){
 	if ! unqlite_value_ok(unqlite_value){
 		return "",nil
 	}
+	var plen C.int
+	c_res:=C.extract_variable_as_string(unqlite_value.unqlite_value,&plen)
+	res:=C.GoStringN(c_res,plen)
 
-	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
-	var plen *C.int
-	c_res:=C.unqlite_value_to_string(unqlite_value.unqlite_value,plen)
-	res:=C.GoStringN(c_res,*plen)
-	defer C.free(unsafe.Pointer(c_res))
-	defer C.free(unsafe.Pointer(plen))
 	return res,GlobaLError("OK")
 }
 
@@ -218,7 +214,6 @@ func (vm *VM)Extract_variable_as_bool(variable_name string) (bool,error){
 		return false,nil
 	}
 
-	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
 	res:=int(C.unqlite_value_to_bool(unqlite_value.unqlite_value))
 	return res!=0,GlobaLError("OK")
 }
@@ -233,7 +228,6 @@ func (vm *VM)Extract_variable_as_int64(variable_name string) (int64,error){
 		return 0,nil
 	}
 
-	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
 	res:=int64(C.unqlite_value_to_int64(unqlite_value.unqlite_value))
 	return res,GlobaLError("OK")
 }
@@ -248,7 +242,6 @@ func (vm *VM)Extract_variable_as_double(variable_name string) (float64,error){
 		return 0.0,nil
 	}
 
-	defer C.free(unsafe.Pointer(unqlite_value.unqlite_value))
 	res:=float64(C.unqlite_value_to_double(unqlite_value.unqlite_value))
 	return res,GlobaLError("OK")
 }
