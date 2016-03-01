@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"../../unqlitego"
 	"../JX9"
-	"encoding/json"
-	"reflect"
 )
 
 func main(){
-	d:=`$my_data = {
+	/*d:=`$my_data = {
      // Greeting message
      greeting : "Hello world!\n",
      // Dummy field
@@ -28,10 +26,15 @@ $j=[{Brown:1}];
 print $my_data.greeting; //Hello world!
 print "Host Operating System: ", $my_data.os_name, JX9_EOL;
 print "Current date: ", $my_data.date, JX9_EOL;
-print "Current time: ", $my_data.time(); // Anonymous function `
+print "Current time: ", $my_data.time(); */ // Anonymous function `
 	//d:=`$j=1973.1;`
 	script:=JX9.NewScript()
-	script.UpdateScript(d)
+	script.CreateOpenDataBase("users","ptr")
+	script.StoreJson("users","{\"x\":\"y\"}")
+	script.StoreJson("users","[{\"VVV\":\"y\"}]")
+	script.GetAllFromDatatBase("users","users")
+	script.FetchJsonList("users","P","x==\"y\"")
+	script.DeleteRecord("users",0,"Q")
 	//vm:=unqlitego.NewVM()
 	db,err:=unqlitego.NewDatabase("/tmp/unqlite.db")
 	//jx9script:=JX9.NewScript()
@@ -43,17 +46,15 @@ print "Current time: ", $my_data.time(); // Anonymous function `
 	//err,res,out,vm:=script.CompileAndExecute(*db)
 	err,res,out,vm:=script.CompileAndExecute(*db)
 	//err,res:=db.Unqlite_compile(script.GetScript(),vm)
+	fmt.Printf("%s",script.GetScript())
 	if err!=nil{
 		fmt.Printf("%s", res)
 
 	}else{
 		fmt.Printf("%s\n\n",out)
-		x,y:=vm.Extract_variable_as_string("j")
+		x,y:=vm.Extract_variable_as_string("P")
 		fmt.Printf("\n%s:%s",x,y)
-		var p interface{}
 
-		v:=json.Unmarshal([]byte(x),&p)
-		fmt.Printf("  %s   %s  %s",v,p.([]interface{})[0].(map[string]interface {})["Brown"],reflect.TypeOf(p.([]interface{})[0]))
 	}
 
 	//fmt.Printf("%s",jx9script.GetScript()

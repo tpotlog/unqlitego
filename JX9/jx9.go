@@ -69,6 +69,7 @@ func (script *JX9_script) Compile(database unqlitego.Database) (error,string,unq
 
 }
 
+
 func (script JX9_script) CompileAndExecute(database unqlitego.Database) (error,string,string,unqlitego.VM){
 	/*
 	Complie and execute a JX9 script returned values are
@@ -82,4 +83,44 @@ func (script JX9_script) CompileAndExecute(database unqlitego.Database) (error,s
 	return err,out,vm.VM_extract_output(),vm
 }
 
+func (script *JX9_script) StoreJson(database_name,json_code string){
+	//Store A json or A json list
+	f:=fmt.Sprintf(`$j=%s;
+	$res=db_store(%s,$j);
+	if ( !$res ){
+		print db_errlog();
+		retrun;
+	}
+	`,json_code,database_name)
+	script.UpdateScript(f)
+}
 
+func (script *JX9_script) GetAllFromDatatBase(database_name,variable_name string){
+	f:=fmt.Sprintf(`$%s=db_fetch_all('%s');
+	`,variable_name,database_name)
+	script.UpdateScript(f)
+}
+
+func (script *JX9_script) FetchJsonList(database_name,variable_name,search_path string){
+	f:=fmt.Sprintf(`$callback=function($record){
+							if ($record.%s){
+									return TRUE;
+								}
+							return FALSE;
+					};
+	$%s=db_fetch_all('%s',$callback);
+	`,search_path,variable_name,database_name)
+	script.UpdateScript(f)
+}
+
+func (script *JX9_script) DropCollection(database_name string){
+	f:=fmt.Sprintf(`db_drop_collection('%s');
+	`,database_name)
+	script.UpdateScript(f)
+}
+
+func (script *JX9_script) DeleteRecord(database_name string,record_id int64,result_variable string){
+	f:=fmt.Sprintf(`$%s=db_drop_record('%s',%d);
+	`,result_variable,database_name,record_id)
+	script.UpdateScript(f)
+}
