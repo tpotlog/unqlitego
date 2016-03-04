@@ -1,16 +1,12 @@
 package JX9
 import (
 	"fmt"
-//	"encoding/json"
-//	"strings"
 	"../../unqlitego"
 )
 
 /*
 Build and generate JX9 scripts for unqlite database
 */
-
-
 
 type JX9_script struct{
 	script string
@@ -56,7 +52,8 @@ func (script *JX9_script) CreateOpenDataBase(database_name,pointer_name string) 
 			print db_errlog();
 			return;
 			}
-		}`, database_name,pointer_name,database_name,pointer_name)
+		}
+	`, database_name,pointer_name,database_name,pointer_name)
 
 
 	script.UpdateScript(code)
@@ -113,6 +110,13 @@ func (script *JX9_script) FetchJsonList(database_name,variable_name,search_path 
 	script.UpdateScript(f)
 }
 
+func (script *JX9_script) FetchJsonByID(database_name string,record_id int64,variable_name string){
+	f:=fmt.Sprintf(`$%s=db_fetch_by_id('%s',%d);
+	`,variable_name,database_name,record_id)
+	script.UpdateScript(f)
+
+}
+
 func (script *JX9_script) DropCollection(database_name string){
 	f:=fmt.Sprintf(`db_drop_collection('%s');
 	`,database_name)
@@ -124,3 +128,39 @@ func (script *JX9_script) DeleteRecord(database_name string,record_id int64,resu
 	`,result_variable,database_name,record_id)
 	script.UpdateScript(f)
 }
+
+func (script *JX9_script) UpdateRecord(database_name string ,record_id int64,new_json string){
+	script.DeleteRecord(database_name,record_id,"delete_record_status")
+	script.UpdateScript(`if ( !$delete_record_status ){
+	print db_errlog();
+	return ;
+	}
+	`)
+	script.StoreJson(database_name,new_json)
+}
+
+func (script *JX9_script)  GetDatabaseTotalNumberOfRecords(databse_name ,variable_name string){
+	f:=fmt.Sprintf(`$%s=db_total_records(%s)
+	`,variable_name,databse_name)
+	script.UpdateScript(f)
+
+}
+
+func (script *JX9_script) GetDatabaseVersion(variable_name string){
+	f:=fmt.Sprintf(`$%s=db_version();
+	`,variable_name)
+	script.UpdateScript(f)
+}
+
+func (script *JX9_script) GetDatabaseSig(variable_name string){
+	f:=fmt.Sprintf(`$%s=db_sig();
+	`,variable_name)
+	script.UpdateScript(f)
+}
+
+func (script *JX9_script) GetDatabaseCopyRight(variable_name string){
+	f:=fmt.Sprintf(`$%s=db_copyright();
+	`,variable_name)
+	script.UpdateScript(f)
+}
+
