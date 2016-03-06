@@ -23,6 +23,12 @@ func (err JsonError) Error() string{
 
 /*jx9_script code*/
 
+func NewJX9Script() *JX9_script{
+	s:=&JX9_script{}
+	s.InitScript()
+	return s
+}
+
 func (script *JX9_script) GetScript() string{
 	//Return current script of the JX9_struct struct
 	return script.script
