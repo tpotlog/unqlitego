@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"../../unqlitego"
-	//"../JX9"
 	"../collections"
 )
 
@@ -26,7 +25,12 @@ func main(){
 		fmt.Printf("%s", err)
 
 	}else {
-		collections.NewCollection("users",db)
+		collection := collections.NewCollection("users", db)
+		f,t:=collection.UpdateRecord(3,"{\"foo\":\"bar\"}")
+		fmt.Printf("%s  -- %s\n" ,f,t)
+		//fmt.Print("\n%s\n",collection.GetScript().GetScript())
+		_,W:=collection.GetAll()
+		fmt.Print("%s  \n" ,W)
 	}
 /*else{
 		fmt.Printf("%s\n\n",out)
