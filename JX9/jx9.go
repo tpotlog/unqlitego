@@ -112,7 +112,7 @@ func (script *JX9_script) GetAllFromDatatBase(database_name,variable_name string
 	`,variable_name,database_name)
 	script.UpdateScript(f)
 }
-/*	Add Code snippet to the JX9 script which will search for specific
+/*	Add Code snippet to the JX9 script which will search for specific JSON records according to a json path
 		database_name:The name of the databse to greb all the record from
 		variable_name:The name of the variable which will hold the result of the db_fetch_all function result.
 		search_path:The JX9 json path format to be used for grabbing records:
@@ -137,18 +137,18 @@ func (script *JX9_script) FetchJsonList(database_name,variable_name,search_path 
 	script.UpdateScript(f)
 }
 
-/*	Add Code snippet to the JX9 script which will search for specific
-		database_name:The name of the databse to greb all the record from
-		variable_name:The name of the variable which will hold the result of the db_fetch_all function result.
-		search_path:The JX9 json path format to be used for grabbing records:
+/*	Add Code snippet to the JX9 script which will search for specific JSON record with a specific id
+		database_name:The name of the databse to grep the record from
+		record_id:the record id (recod ids are generated automaticlly when adding a new record).
+		variable_name:The return result of the db_fetch_by_id JX9 function
 		 	Ex:
 		 		Assumiing that our databse have the following records stored
-		 		1. {"x":1,"y":{"a":,2}}
-		 		2. {"x":1,"y":{"a":,3}}
-		 		3. {"x":1,"y":{"a":,4}}
+		 		1. {"x":1,"y":{"a":,2},"__id":1}
+		 		2. {"x":1,"y":{"a":,3},"__id":2}
+		 		3. {"x":1,"y":{"a":,4},"__id":3}
 
-		 		search_path="y.a>2" will return
-		 		[{"x":1,"y":{"a":,3}},{"x":1,"y":{"a":,4}}]
+		 		record_id=2 ,will result with, the following JSON
+		 		{"x":1,"y":{"a":,3},"__id":2}
 */
 func (script *JX9_script) FetchJsonByID(database_name string,record_id int64,variable_name string){
 	f:=fmt.Sprintf(`$%s=db_fetch_by_id('%s',%d);
@@ -157,18 +157,36 @@ func (script *JX9_script) FetchJsonByID(database_name string,record_id int64,var
 
 }
 
+/*	Add a code snippet to a JX9 script which drops an entire databse (collection).
+		database_name:The of databse to remove.
+		variable_name:The name of the variable which will hold the result of JX9 db_drop_collection function
+		The value returned can be true or false depending on the fact if the database could be removed.
+ */
 func (script *JX9_script) DropCollection(database_name,variable_name string){
 	f:=fmt.Sprintf(`$%s=db_drop_collection('%s');
 	` ,variable_name,database_name)
 	script.UpdateScript(f)
 }
 
+/*	Add a code snipped to a JX9 script which removes a record by specifying it's record id
+		database_name:The name of the database to drop the record from
+		record_id:The id of the record to be removed
+		result_variable:The name of the variable which will hold the results of the JX9 db_drop_record function
+		can be true or false depending on if the record could be removed.
+ */
 func (script *JX9_script) DeleteRecord(database_name string,record_id int64,result_variable string){
 	f:=fmt.Sprintf(`$%s=db_drop_record('%s',%d);
 	`,result_variable,database_name,record_id)
 	script.UpdateScript(f)
 }
 
+/*	Add a code snippet to update a record , but basiclly it is removing records and adding a new one in-stand of it.
+		database_name:The name of the databse to update the record at.
+		record_id:The id of the JSON record to update.
+		new_json:The new JSON to replace the JSON record to be removed.
+		variable_name:The name of the variable which will hold the new record id, if replacemant was not possiable that it's value will be -1.
+
+ */
 func (script *JX9_script) UpdateRecord(database_name string ,record_id int64,new_json,variable_name string){
 	script.DeleteRecord(database_name,record_id,`delete_record_status`)
 	script.UpdateScript(fmt.Sprintf(`$%s=-1;
@@ -186,6 +204,10 @@ func (script *JX9_script) UpdateRecord(database_name string ,record_id int64,new
 	`,variable_name,database_name))
 }
 
+/*	Add a JX9 code snipped which returnes the database (collection) total number of records.
+		database_name:The database name to count the number of records.
+		variable_name:The name of the variable to hold the total number of databse records.
+ */
 func (script *JX9_script)  GetDatabaseTotalNumberOfRecords(databse_name ,variable_name string){
 	f:=fmt.Sprintf(`$%s=db_total_records(%s)
 	`,variable_name,databse_name)
@@ -193,18 +215,27 @@ func (script *JX9_script)  GetDatabaseTotalNumberOfRecords(databse_name ,variabl
 
 }
 
+/*	Add a JX9 code snippet which returnes a string representing the unqlite databse version
+		variable_name:The name of the variable which will hold the database version string
+ */
 func (script *JX9_script) GetDatabaseVersion(variable_name string){
 	f:=fmt.Sprintf(`$%s=db_version();
 	`,variable_name)
 	script.UpdateScript(f)
 }
 
+/*	Add a JX9 code snippet which returnes a string representing the unqlite databse signature
+		variable_name:The name of the variable which will hold the database signature string
+ */
 func (script *JX9_script) GetDatabaseSig(variable_name string){
 	f:=fmt.Sprintf(`$%s=db_sig();
 	`,variable_name)
 	script.UpdateScript(f)
 }
 
+/*	Add a JX9 code snippet which returnes a string representing the unqlite databse copyrights
+		variable_name:The name of the variable which will hold the database copyrights string
+ */
 func (script *JX9_script) GetDatabaseCopyRight(variable_name string){
 	f:=fmt.Sprintf(`$%s=db_copyright();
 	`,variable_name)
