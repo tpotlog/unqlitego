@@ -1,3 +1,6 @@
+/*	The collections package represents a high level approach to use unqlite trough collections
+	which allow reading/writing/deleting/updating documents (JSONs) to and from the unqlite database.
+ */
 package collections
 
 import (
@@ -6,12 +9,15 @@ import (
 	"fmt"
 )
 
+//A string representing a error related to collections
 type UnqliteCollectionError string
 
+//A wrapped to allow use the UnqliteCollectionError with error interface
 func (err UnqliteCollectionError) Error() string{
 	return string(err)
 }
 
+//A struct representing unqlite collection
 type UnqliteCollection struct {
 	name string
 	database *unqlitego.Database
@@ -27,6 +33,9 @@ type UnqliteCollection struct {
 }
 
 
+/*	Retrun a new collection related
+
+ */
 func NewCollection(name string,database *unqlitego.Database) *UnqliteCollection{
 	collection:=&UnqliteCollection{name,database,JX9.NewJX9Script(),true,true,false,nil,"",""}
 	collection.Flush()
