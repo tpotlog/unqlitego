@@ -1,14 +1,47 @@
 language: go
 
-go:
-  - 1.1
-  - 1.2
-  - tip
+matrix:
+  include:    
+    # Linux x86_64, Go: 1.8
+    - env: GOOS=linux GOARCH=amd64
+      go: "1.8"
+
+    # Linux x86_64, Go: 1.9
+    - env: GOOS=linux GOARCH=amd64
+      go: "1.9"
+
+    # Linux x86_64, Go: 1.10
+    - env: GOOS=linux GOARCH=amd64
+      go: "1.10"
+
+    # Linux x86_64, Go: tip
+    - env: GOOS=linux GOARCH=amd64
+      go: "tip"
+
+    # Windows x86_64, Go: 1.8
+    - env: GOOS=windows GOARCH=amd64 CXX=x86_64-w64-mingw32-g++
+      addons: { apt: { packages: ["g++-7", "gcc-mingw-w64"], sources: ["ubuntu-toolchain-r-test"] } }
+      go: "1.8"
+
+    # Windows x86_64, Go: 1.9
+    - env: GOOS=windows GOARCH=amd64 CXX=x86_64-w64-mingw32-g++
+      addons: { apt: { packages: ["g++-7", "gcc-mingw-w64"], sources: ["ubuntu-toolchain-r-test"] } }
+      go: "1.9"
+
+    # Windows x86_64, Go: 1.10
+    - env: GOOS=windows GOARCH=amd64 CXX=x86_64-w64-mingw32-g++
+      addons: { apt: { packages: ["g++-7", "gcc-mingw-w64"], sources: ["ubuntu-toolchain-r-test"] } }
+      go: "1.10"
+
+    # Windows x86_64, Go: tip
+    - env: GOOS=windows GOARCH=amd64 CXX=x86_64-w64-mingw32-g++
+      addons: { apt: { packages: ["g++-7", "gcc-mingw-w64"], sources: ["ubuntu-toolchain-r-test"] } }
+      go: "tip"
 
 install:
   - go get github.com/golang/dep/cmd/dep
   - dep ensure
-  - go install .
 
 script:
+  - go install .
   - go test .
